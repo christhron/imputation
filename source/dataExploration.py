@@ -6,7 +6,6 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import linalg as LA
-from scipy.signal import savgol_filter
 
 # Options for 2007 data
 dfName = 'Nal_filtre_FLX_NEE_01012007_31122010.csv'
@@ -163,16 +162,29 @@ plt.xlabel("Half-hour time stamp")
 plt.ylabel("Normalized value of FEE")
 plt.show()
 
-ndp = 3
-Xyr = np.reshape(X[:,0],(ndp,48//ndp,-1))
-Xyr = np.nanmean(Xyr,axis=0)
-nh,ny = np.shape(Xyr)
-yrInd = np.ones((nh,1))@np.reshape(np.arange(ny),(1,-1))
-yrInd = yrInd.astype(int) % 365
-hInd = np.reshape(np.arange(nh),(-1,1))@np.ones((1,ny))
+nm = 5 
+nh = 6
+kSize = 10
+kernel = np.ones(kSize)/kSize
+Xvals = X[:,0]
+Xvals = Xvals[:365*(len(Xvals)//365)]
+Xvals = np.reshape(Xvals,(-1,365,48))
+Xvals = np.nanmean(Xvals, axis=0)
+
+Xh = np.reshape(Xvals,(-1,nh,48//nh))
+Xh = np.nanmean(Xh,axis=2)
 for jh in range(nh):
-    plt.plot(yrInd[jh,:],savgol_filter(Xyr[jh,:],7,2),'-')
+    plt.plo    (np.arange(365),np.convolve(Xh[:,jh],kernel,mode = 'same'),'-')
 plt.title('Time of day variation over the year')
+plt.xlabel('Day of the year')
+plt.show()
+
+Xy = np.reshape(Xvals,(nm,-1,48))
+Xy = np.nanmean(Xy,axis=1)
+for jm in range(nm):
+    plt.plot(np.arange(48),Xy[jm,:],'-')
+plt.title('Time of day variation over the year')
+plt.xlabel('Time of day')
 plt.show()
 
 #@@@ Find distribution of hole sizes.
